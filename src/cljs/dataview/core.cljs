@@ -54,7 +54,7 @@
                  :address {:street "Wild Currant Way" :number 7255}
                  :languages [{:name "clojure" :tags ["immutable" "functional" "lisp"] :like? true}
                              {:name "javascript" :tags ["functional" "mutable"] :like? false}]
-                 :tags ["programmer" "entrepreneur" "loves jocelyn"]
+                 :tags ["programmer" "entrepreneur"]
                 }}))
 
 (defn- dataview-k?
@@ -62,11 +62,15 @@
   (= (subs (name k) 0 2) "__"))
 
 (defn add-item!
-  [app {:keys [path data]} schema]
+  [app owner {:keys [path data]} schema]
   (do
-    (om/transact! app path #(conj % data))
+    (om/transact! app path #(conj % (om/value data)))
     (om/update! app [:__annotated]
-                (annotate-structure (dissoc @app :__annotated) schema))))
+                (annotate-structure (dissoc @app :__annotated) schema))
+    (.log js/console (clj->js @app))
+;;     (put! (om/get-state owner :events)
+;;           {:action :stage-create :path path :value (om/value data)})
+    ))
 
 (declare map-view*)
 
@@ -92,16 +96,14 @@
                          :state (om/get-state owner)})
               [:td.jh-value.jh-array-value
                (cond
-                (map? v') (om/build map-view* v'
-                                    {:state (om/get-state owner)})
-                (sequential? v') (om/build seq-view* v'
-                                           {:state (om/get-state owner)})
-                :otherwise (render-data v'))])
+                (map? v')        (om/build map-view* v' {:state (om/get-state owner)})
+                (sequential? v') (om/build seq-view* v' {:state (om/get-state owner)})
+                :otherwise       (render-data v'))])
             [:td.jh-value.jh-array-value
              (cond
-              (map? v) (om/build map-view* v {:state (om/get-state owner)})
+              (map? v)        (om/build map-view* v {:state (om/get-state owner)})
               (sequential? v) (om/build seq-view* v {:state (om/get-state owner)})
-              :otherwise (render-data v))])])]]))))
+              :otherwise      (render-data v))])])]]))))
 
 (defn map-view*
   [app owner]
@@ -133,9 +135,7 @@
                                           {:state (om/get-state owner)})
                  (sequential? __value) (om/build seq-view* __value
                                                  {:state (om/get-state owner)})
-                 :otherwise (render-data __value))
-                ])])]
-          ])))))
+                 :otherwise (render-data __value))])])]])))))
 
 
 (defn data-view
@@ -152,7 +152,7 @@
         (om/update! app [:__annotated] (annotate-structure app schema))
         (go (while true
               (alt!
-               create ([v c] (add-item! app v schema)))))))
+               create ([v c] (add-item! app owner v schema)))))))
     om/IRenderState
     (render-state [_ state]
       (html
