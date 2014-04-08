@@ -61,7 +61,7 @@
   (render-data [this]
                [:span.jh-type-number this])
 
-  js/String
+  string
   (render-data [this]
                [:span.jh-type-string
                 (if (empty? (clojure.string/trim this))

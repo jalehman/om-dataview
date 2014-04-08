@@ -157,10 +157,7 @@
     (render-state [_ state]
       (html
        [:div.jh-root
-;;         (.log js/console (clj->js app))
-        (om/build map-view* (:__annotated app) {:state state})
-;;         (render-data (:__annotated app) app owner)
-        ]))))
+        (om/build map-view* (:__annotated app) {:state state})]))))
 
 (defn dataview-app
   [app owner]

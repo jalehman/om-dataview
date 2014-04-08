@@ -1,4 +1,4 @@
-/resources/*
+/resources/public/js/out/
 /target/*
 .nrepl-port
 .lein-repl-history
